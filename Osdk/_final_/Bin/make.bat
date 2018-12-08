@@ -54,28 +54,39 @@ SET LCC65DIR=%OSDK%
 :: Create a build directory if it does not exist
 :: Mike: Seems to fail creating the folder under Wine, resulting in a failed build
 :: Mike: What about testing for BUILD\. instead ?
-:: 
+::
 IF EXIST BUILD\NUL GOTO NoBuild
 MD BUILD
 :NoBuild
 
 
 ::
-:: Make sure that temp folder is entirelly empty before attempting a new build
+:: Make sure that temp folder is entirely empty before attempting a new build
 :: Will guarantee we do not have side effects between builds
 ::
 ::ECHO ON
-RMDIR /s /q %OSDKT%\ >NUL
+IF EXIST "%OSDKT%\" (
+    RMDIR /s /q "%OSDKT%\" >NUL
+    IF ERRORLEVEL 1 (
+        ECHO Could not delete temp folder "%OSDKT%\".
+        GOTO ErFailure
+    )
+    IF EXIST "%OSDKT%" (
+        ECHO Failed to delete temp folder "%OSDKT%\".
+        GOTO ErFailure
+    )
+)
 MD %OSDKT% >NUL
-::IF EXIST %OSDKT%\NUL GOTO NoTmp
-::MD %OSDKT%
-:NoTmp
+IF ERRORLEVEL 1 (
+    ECHO Failed to create temp folder "%OSDKT%\".
+    GOTO ErFailure
+)
 ::ECHO OFF
 
 
 ::
 :: Display a compilation message
-:: Note: Should find a way to disable the adress display for BASIC programs... kind of lame
+:: Note: Should find a way to disable the address display for BASIC programs... kind of lame
 ::
 ECHO Building the program %OSDKNAME% at adress %OSDKADDR%
 
@@ -126,16 +137,18 @@ DEL BUILD\%OSDKPACK%.* >NUL
 
 
 ::
-:: Compile/Assemble files 
+:: Compile/Assemble files
 :: depending of their type
 ::
 :FileLoop
-IF "%1"=="" GOTO Finished
+IF "%1"=="" GOTO FinishedTrampoline
 
 ::ECHO %1 >%OSDKT%\linktemp.txt
 ::COPY /b %OSDKT%\link.bat+%OSDKT%\linktemp.txt %OSDKT%\link.bat
 ::ECHO %1 >>%OSDKT%\link.bat
- 
+
+ECHO "Handling %1"
+
 IF EXIST "%1.C" GOTO Compile
 IF EXIST "%1.S" GOTO Assemble
 IF EXIST "%1.ASM" GOTO Assemble
@@ -158,23 +171,51 @@ GOTO End
 IF "%OSDKBRIEF%"=="" ECHO Compiling %1.C
 
 IF "%OSDKBRIEF%"=="" ECHO   - preprocess
+SET PREPROCESSOR=%OSDKB%\cpp.exe
+IF NOT EXIST %PREPROCESSOR% (
+    SET MISSINGTOOL=%PREPROCESSOR%
+    GOTO MissingTool
+)
 :: the -DATMOS is for Contiki
-%OSDKB%\cpp.exe -lang-c++ -I %OSDK%\include -D__16BIT__ -D__NOFLOAT__ -DATMOS -DOSDKNAME_%OSDKNAME% -nostdinc %1.c %OSDKT%\%1.c
+@echo ON
+%PREPROCESSOR% -lang-c++ -I %OSDK%\include -D__16BIT__ -D__NOFLOAT__ -DATMOS -DOSDKNAME_%OSDKNAME% -nostdinc %1.c %OSDKT%\%1.c
+@echo OFF
 
 IF "%OSDKBRIEF%"=="" ECHO   - compile
-%OSDKB%\compiler.exe -N%1 %OSDKCOMP% %OSDKT%\%1.c >%OSDKT%\%1.c2
+SET COMPILER=%OSDKB%\compiler.exe
+IF NOT EXIST %COMPILER% (
+    SET MISSINGTOOL=%COMPILER%
+    GOTO MissingTool
+)
+@echo on
+%COMPILER% -N%1 %OSDKCOMP% %OSDKT%\%1.c >%OSDKT%\%1.c2
+@echo off
 IF ERRORLEVEL 1 GOTO ErFailure
 
 IF "%OSDKBRIEF%"=="" ECHO   - convert C to assembly code
-%OSDKB%\cpp.exe -lang-c++ -imacros %OSDK%\macro\macros.h -traditional -P %OSDKT%\%1.c2 %OSDKT%\%1.s
+SET CTOASMCONVERTER=%OSDKB%\cpp.exe
+IF NOT EXIST %CTOASMCONVERTER% (
+    SET MISSINGTOOL=%CTOASMCONVERTER%
+    GOTO MissingTool
+)
+%CTOASMCONVERTER% -lang-c++ -imacros %OSDK%\macro\macros.h -traditional -P %OSDKT%\%1.c2 %OSDKT%\%1.s
 
 IF "%OSDKBRIEF%"=="" ECHO   - cleanup output
+SET MACROSPLITTER=%OSDKB%\cpp.exe
+IF NOT EXIST %MACROSPLITTER% (
+    SET MISSINGTOOL=%MACROSPLITTER%
+    GOTO MissingTool
+)
 ::%OSDKB%\tr < %OSDKT%\%1.s > %OSDKT%\%1
-%OSDKB%\macrosplitter.exe %OSDKT%\%1.s %OSDKT%\%1
+%MACROSPLITTER% %OSDKT%\%1.s %OSDKT%\%1
 SET OSDKLINKLIST=%OSDKLINKLIST% %OSDKT%\%1
 SHIFT
 GOTO FileLoop
 
+:: We are using a trampoline to reach the Finished label because Batch files cannot
+:: GOTO a label which is more than 512 bytes away from the GOTO command.
+:FinishedTrampoline
+goto Finished
 
 ::
 :: This is the sequence of instructions necessary to build an assembly code file.
@@ -203,6 +244,18 @@ TYPE %1.BAS >> %OSDKT%\%OSDKNAME%.bas
 SHIFT
 GOTO FileLoop
 
+::
+:: Essential tools are missing, signal which one and how to build it
+:: then fail.
+::
+:MissingTool
+ECHO The tool "%MISSINGTOOL%" is missing.
+ECHO The build cannot proceed without it.
+ECHO Either your installation of the OSDK is corrupt,
+ECHO or you have forgotten to build that tool.
+ECHO Please refer to the BUILD-or-INSTALL documentation, then retry.
+
+GOTO End
 
 
 ::
@@ -217,7 +270,7 @@ IF NOT EXIST %OSDKT%\%OSDKNAME%.bas GOTO Link
 ::ECHO Generating line numbers
 ::%OSDKB%\Labels2Num %OSDKT%\%OSDKNAME%.bas %OSDKT%\%OSDKNAME%.bas2 1 1
 
-ECHO Generating TAPE file 
+ECHO Generating TAPE file
 %OSDKB%\Bas2Tap -b2t1 -color1 %OSDKT%\%OSDKNAME%.bas build\%OSDKNAME%.tap
 
 IF ERRORLEVEL 1 GOTO ErFailure
@@ -230,7 +283,7 @@ GOTO End
 ::
 ECHO Linking
 ::ECHO %OSDKLINKLIST%
-cd 
+cd
 ECHO %OSDKB%\link65.exe %OSDKLINK% -d %OSDK%\lib/ -o %OSDKT%\linked.s -f -q %OSDKLINKLIST% >%OSDKT%\link.bat
 ::ECHO %OSDKB%\link65.exe %OSDKLINK% -d %OSDK%\lib/ -o %OSDKT%\linked.s -s %OSDKT%\ -f -q %OSDKFILE% >%OSDKT%\link.bat
 ::pause
