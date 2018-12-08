@@ -1,0 +1,4 @@
+# 1 "C:\\Users\\laurent\\Desktop\\Dropbox\\Oric\\OSDK\\Osdk\\_final_\\TMP\\main.s"
+
+_main
+	rts ;

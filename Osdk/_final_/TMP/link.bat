@@ -1,0 +1,1 @@
+C:\Users\laurent\Desktop\Dropbox\Oric\OSDK\Osdk\_final_\BIN\link65.exe  -d C:\Users\laurent\Desktop\Dropbox\Oric\OSDK\Osdk\_final_\lib/ -o C:\Users\laurent\Desktop\Dropbox\Oric\OSDK\Osdk\_final_\TMP\linked.s -f -q  C:\Users\laurent\Desktop\Dropbox\Oric\OSDK\Osdk\_final_\TMP\main 

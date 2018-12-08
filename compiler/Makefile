@@ -1,4 +1,5 @@
-include ../../../rules.mk
+COMMONRULES=../../../rules.mk
+include $(COMMONRULES)
 
 CPPFLAGS += -Iincludes -DPOSIX
 
