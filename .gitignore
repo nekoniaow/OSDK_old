@@ -1,0 +1,17 @@
+# OSDK rules --------
+
+# The __final__ folder hosts the compiled version,
+# and its TMP folder does not need revision control since it contains intermediate build files.
+/Osdk/__final__/TMP/*
+
+# The Build folder is generated upon building the OSDK, it can be ignored.
+/Build/*
+
+# Non OSDK rules ---------
+
+# Visual Studio local files, in any folder.
+.vs/*
+*.vcxproj.user
+
+# Compilation byproducts, in any folder.
+*.o
