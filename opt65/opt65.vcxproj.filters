@@ -13,9 +13,6 @@
       <UniqueIdentifier>{072292b7-d550-4d17-888c-c371fef731cf}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl</Extensions>
     </Filter>
-    <Filter Include="samples sources">
-      <UniqueIdentifier>{8ed6909d-8840-46e8-9598-e717937952fc}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sources\opt65.c">
@@ -31,18 +28,6 @@
     <None Include="data\normal.ico">
       <Filter>data</Filter>
     </None>
-    <None Include="sample sources\horizontal_stretch.s">
-      <Filter>samples sources</Filter>
-    </None>
-    <None Include="sample sources\horiz_stretch_79.s">
-      <Filter>samples sources</Filter>
-    </None>
     <None Include="Readme.md" />
-    <None Include="sample sources\horiz_stretch_79_lines.s">
-      <Filter>samples sources</Filter>
-    </None>
-    <None Include="sample sources\horiz_stretch_65.s">
-      <Filter>samples sources</Filter>
-    </None>
   </ItemGroup>
 </Project>

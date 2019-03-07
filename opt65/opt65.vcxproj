@@ -143,10 +143,6 @@
   <ItemGroup>
     <None Include="data\normal.ico" />
     <None Include="Readme.md" />
-    <None Include="sample sources\horizontal_stretch.s" />
-    <None Include="sample sources\horiz_stretch_65.s" />
-    <None Include="sample sources\horiz_stretch_79.s" />
-    <None Include="sample sources\horiz_stretch_79_lines.s" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

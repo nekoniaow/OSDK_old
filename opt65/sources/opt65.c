@@ -2577,7 +2577,7 @@ void add_line(line *p)
   blkbuf_len++;
 
 #ifdef debug_parse
-  dbmsg2("line %i added tok=%i\n", blkbuf_len - 1, blkbuf[blkbuf_len - 1]);
+  dbmsg2("line %i added tok=%i\n", blkbuf_len - 1, blkbuf[blkbuf_len - 1].tok);
 #endif
 }
 
