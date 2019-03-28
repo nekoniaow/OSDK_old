@@ -20,10 +20,10 @@
 #undef debug_opti2
 #undef debug
 
-#define debug_parse
-#define debug_opti1
-#define debug_opti2
-#define debug
+//#define debug_parse
+//#define debug_opti1
+//#define debug_opti2
+//#define debug
 
 #ifdef debug
 //#define debug_out stderr
