@@ -123,6 +123,14 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <OutputFile>.\build\Debug/opt65.bsc</OutputFile>
     </Bscmake>
+    <PostBuildEvent>
+      <Message>Replace the current OSDK's opt65 with this build.</Message>
+      <Command>xcopy /r /y "$(TargetDir)$(TargetFileName)" "%OSDK%\Bin\$(TargetFileName)"</Command>
+    </PostBuildEvent>
+    <PreLinkEvent>
+      <Command>
+      </Command>
+    </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="sources\opt65.c">
